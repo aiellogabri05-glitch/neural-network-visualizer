@@ -4,7 +4,7 @@ A tiny neural network (64 → 16 → 16 → 10) that recognizes hand-drawn digit
 
 **[Live demo](https://aiellogabri05-glitch.github.io/neural-network-visualizer/)** — link added after deploy
 
-
+![Neural Network Visualizer demo](demo.gif)
 
 ## How it works
 
