@@ -2,7 +2,7 @@
 
 A tiny neural network (64 → 16 → 16 → 10) that recognizes hand-drawn digits, with every activation and connection rendered live as you draw — right in the browser, no backend required.
 
-**[Live demo](#)** — link added after deploy
+**[https://aiellogabri05-glitch.github.io/neural-network-visualizer/](#)** — link added after deploy
 
 ![Neural Network Visualizer](demo.png)
 
