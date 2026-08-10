@@ -140,8 +140,8 @@ function layerPositions(count, height, topMargin = 20) {
 }
 
 const H1_X = 150, H2_X = 300, OUT_X = 450;
-const h1Y = layerPositions(16, 400);
-const h2Y = layerPositions(16, 400);
+const h1Y = layerPositions(64, 400);
+const h2Y = layerPositions(64, 400);
 const outY = layerPositions(10, 400, 40); // margine più grande, sono solo 10
 
 console.log("Posizioni H1:", h1Y);
@@ -156,8 +156,8 @@ function createCircle(cx, cy, r, fill) {
   return circle; // lo restituiamo per poterlo ricolorare dopo
 }
 
-const h1Circles = h1Y.map(y => createCircle(H1_X, y, 8, "#333"));
-const h2Circles = h2Y.map(y => createCircle(H2_X, y, 8, "#333"));
+const h1Circles = h1Y.map(y => createCircle(H1_X, y, 3, "#333"));
+const h2Circles = h2Y.map(y => createCircle(H2_X, y, 3, "#333"));
 const outCircles = outY.map(y => createCircle(OUT_X, y, 12, "#333"));
 
 console.log("Cerchi creati:", h1Circles.length, h2Circles.length, outCircles.length);

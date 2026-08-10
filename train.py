@@ -14,9 +14,9 @@ X_train, X_test, y_train, y_test = train_test_split(
 print("Immagini per allenare:", len(X_train))
 print("Immagini per testare:", len(X_test))
 
-# 3. Creiamo la rete: 2 strati nascosti da 16 neuroni ciascuno
+# 3. Creiamo la rete: 2 strati nascosti da 64 neuroni ciascuno
 clf = MLPClassifier(
-    hidden_layer_sizes=(16, 16),
+    hidden_layer_sizes=(64, 64),
     activation='relu',
     max_iter=3000,
     random_state=42
