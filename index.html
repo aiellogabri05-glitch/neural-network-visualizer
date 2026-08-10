@@ -4,46 +4,54 @@
   <meta charset="UTF-8">
   <title>Neural Network Visualizer</title>
   <style>
-  body {
-    background: #0a0a0a;
-    color: #eee;
-    font-family: system-ui, sans-serif;
-    padding: 24px;
-  }
-  h1 { font-size: 22px; font-weight: 700; }
-  #prediction { font-family: monospace; font-size: 18px; color: #ffb454; }
-  #grid {
-    display: grid;
-    grid-template-columns: repeat(8, 30px);
-    grid-template-rows: repeat(8, 30px);
-    gap: 2px;
-    margin-top: 10px;
-  }
-  .pixel {
-    width: 30px;
-    height: 30px;
-    background-color: white;
-    border: 1px solid #333;
-  }
-  #clearBtn {
-    margin-top: 10px;
-    padding: 8px 16px;
-    background: #222;
-    color: #eee;
-    border: 1px solid #444;
-    border-radius: 6px;
-    cursor: pointer;
-    font-family: monospace;
-  }
-  #clearBtn:hover { background: #333; }
-</style>
+    body {
+      background: #0a0a0a;
+      color: #eee;
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      overflow: hidden; /* la scena 3D occupa tutto lo schermo */
+    }
+    #ui {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 16px;
+      border-radius: 8px;
+    }
+    h1 { font-size: 20px; margin: 0 0 4px; }
+    #prediction { font-family: monospace; font-size: 16px; color: #ffb454; margin: 0; }
+    canvas { display: block; }
+
+    #clearBtn {
+      margin-top: 8px;
+      padding: 8px 16px;
+      background: #222;
+      color: #eee;
+      border: 1px solid #444;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: monospace;
+    }
+    #clearBtn:hover { background: #333; }
+  </style>
 </head>
 <body>
-  <h1>Disegna una cifra</h1>
-  <p id="prediction">Predizione: -</p>
-  <div id="grid"></div>
-  <button id="clearBtn">Cancella</button>
-  <svg id="network" width="500" height="400" style="background:#111; margin-top:20px;"></svg>
-  <script src="app.js"></script>
+  <div id="ui">
+    <h1>Disegna una cifra nello spazio</h1>
+    <p id="prediction">Predizione: -</p>
+    <button id="clearBtn">Cancella</button>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>

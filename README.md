@@ -1,41 +1,61 @@
 # Neural Network Visualizer
 
-A tiny neural network (64 → 16 → 16 → 10) that recognizes hand-drawn digits, with every activation and connection rendered live as you draw — right in the browser, no backend required.
-
-**[Live demo](https://aiellogabri05-glitch.github.io/neural-network-visualizer/)** — link added after deploy
+A compact neural network visualizer for handwritten digit recognition. The current model is a `64 -> 64 -> 64 -> 10` multilayer perceptron trained on 8x8 digit images, with the forward pass rendered live in the browser as an interactive 3D scene.
 
 ![Neural Network Visualizer demo](demo.gif)
 
-## How it works
+## How It Works
 
-Draw a digit on the 8×8 grid and watch the network think in real time:
+Draw a digit on the 8x8 input layer and watch the network update in real time:
 
-- The grid **is** the input layer — 64 pixels feeding directly into the network
-- Hidden neurons light up in orange proportional to their activation
-- Connections between layers show only the strongest current contributions (source activation × weight), colored by sign — orange for excitatory, blue for inhibitory
-- The output layer shows live probabilities for each digit (0–9), with the top prediction highlighted
+- The input layer contains 64 drawable pixels.
+- Two hidden layers contain 64 neurons each.
+- Connections are colored by current contribution: positive values excite, negative values inhibit.
+- The output layer shows probabilities for digits `0` through `9`.
 
 ## Architecture
 
-- **Training** (Python): a scikit-learn `MLPClassifier` (2 hidden layers of 16 neurons, ReLU activation) trained on the `digits` dataset (1,797 8×8 handwritten digit images), reaching **96.7% test accuracy**
-- **Inference** (JavaScript): the trained weights are exported to JSON and the forward pass — matrix multiplication, ReLU, softmax — is reimplemented from scratch in vanilla JS, so the whole demo runs client-side with zero ML libraries in the browser
-- **Visualization**: plain SVG, updated on every stroke — no charting library
+- **Training**: Python trains a scikit-learn `MLPClassifier` on the `digits` dataset.
+- **Export**: `train.py` writes learned weights and biases to `weights.json`.
+- **Inference**: `app.js` reimplements the forward pass in vanilla JavaScript: matrix multiplication, ReLU, and softmax.
+- **Visualization**: Three.js renders the input layer, hidden layers, output layer, and connection strengths in 3D.
 
-## Stack
+## Run Locally
 
-Python (scikit-learn, numpy) for training · Vanilla JavaScript + SVG for inference and visualization · No frameworks, no backend
-
-## Run locally
-
-```bash
-git clone https://github.com/aiellogabri05-glitch/NOME-REPO.git
-cd NOME-REPO
-# open index.html with a local server (e.g. VS Code Live Server)
-```
-
-## Retrain the model
+Because the app loads `weights.json` and uses JavaScript modules, serve the folder with a local web server:
 
 ```bash
-pip install scikit-learn numpy
-python train.py   # regenerates weights.json
+python -m http.server 8000
 ```
+
+Then open:
+
+```text
+http://localhost:8000
+```
+
+## Python Setup
+
+```bash
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+## Retrain The Model
+
+```bash
+python train.py
+```
+
+This regenerates `weights.json`.
+
+## Validate The Export
+
+```bash
+python validate_weights.py
+```
+
+## Toward Jarvis
+
+This project is a strong visual foundation, but an agent needs more than a classifier. See `JARVIS_ROADMAP.md` for the next architecture layers: agent loop, tools, memory, voice, permissions, and automation.

@@ -42,11 +42,11 @@ print("Forma intercepts_[2]:", clf.intercepts_[2].shape)
 import json
 
 pesi = {
-    "W1": clf.coefs_[0].tolist(),      # Input -> Hidden1 (64x16)
-    "b1": clf.intercepts_[0].tolist(), # bias Hidden1 (16)
-    "W2": clf.coefs_[1].tolist(),      # Hidden1 -> Hidden2 (16x16)
-    "b2": clf.intercepts_[1].tolist(), # bias Hidden2 (16)
-    "W3": clf.coefs_[2].tolist(),      # Hidden2 -> Output (16x10)
+    "W1": clf.coefs_[0].tolist(),      # Input -> Hidden1 (64x64)
+    "b1": clf.intercepts_[0].tolist(), # bias Hidden1 (64)
+    "W2": clf.coefs_[1].tolist(),      # Hidden1 -> Hidden2 (64x64)
+    "b2": clf.intercepts_[1].tolist(), # bias Hidden2 (64)
+    "W3": clf.coefs_[2].tolist(),      # Hidden2 -> Output (64x10)
     "b3": clf.intercepts_[2].tolist(), # bias Output (10)
 }
 
