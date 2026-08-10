@@ -7,9 +7,10 @@ This project currently visualizes a trained digit-classifier network. To evolve 
 - Browser-based 3D neural network visualizer.
 - Python training scripts for the scikit-learn `digits` dataset.
 - Exported `weights.json` used by JavaScript inference.
-- No agent loop yet.
-- No tool system yet.
-- No persistent memory yet.
+- First local text-agent shell in `agent/`.
+- Basic local tools: project summary, file reading, text search, Git status, diff, health checks, weight validation, and guarded training.
+- Persistent local memory and todos in `.agent_memory.json`.
+- Guarded Git tools for commit and push.
 - No voice interface yet.
 
 ## Principle
@@ -107,3 +108,5 @@ Build a local text agent that can:
 - Keep a short task memory during the session.
 
 Once that works, voice and richer automation become much easier.
+
+Status: initial version added in `agent/`.

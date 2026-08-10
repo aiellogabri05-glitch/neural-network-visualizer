@@ -56,6 +56,41 @@ This regenerates `weights.json`.
 python validate_weights.py
 ```
 
+## Run The Local Agent
+
+Start the first text-only Jarvis shell:
+
+```bash
+python -m agent.agent_loop
+```
+
+Try commands such as:
+
+```text
+help
+health
+files
+inspect agent/agent_loop.py
+read README.md
+search forwardPass
+remember the visualizer uses a 64 -> 64 -> 64 -> 10 model
+recall visualizer
+todo add add voice input later
+todo list
+validate
+diff
+explain
+roadmap
+```
+
+Guarded commands ask for confirmation in interactive mode:
+
+```text
+train
+commit <message>
+push
+```
+
 ## Toward Jarvis
 
 This project is a strong visual foundation, but an agent needs more than a classifier. See `JARVIS_ROADMAP.md` for the next architecture layers: agent loop, tools, memory, voice, permissions, and automation.
