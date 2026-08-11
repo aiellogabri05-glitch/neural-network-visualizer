@@ -1,8 +1,29 @@
 import re
 from dataclasses import dataclass
 from pathlib import Path
+import requests
 
 from agent.tools.filesystem import TEXT_EXTENSIONS, project_files
+
+
+def ask_llm(prompt, model="llama3.2:3b"):
+    try:
+        response = requests.post(
+            "http://localhost:11434/api/chat",
+            json={
+                "model": model,
+                "messages": [{"role": "user", "content": prompt}],
+                "stream": False
+            },
+            timeout=120  # con il tuo hardware può metterci un po'
+        )
+        response.raise_for_status()
+        data = response.json()
+        return data["message"]["content"]
+    except requests.exceptions.ConnectionError:
+        return None  # Ollama non è attivo
+    except requests.exceptions.Timeout:
+        return None  # troppo lento, meglio fallire con grazia
 
 
 STOPWORDS = {
@@ -180,9 +201,27 @@ def answer_project_question(workspace_root, question):
             f"{compact_snippet(chunk.text)}"
         )
 
+    context_text = "\n\n".join(
+        f"File {chunk.path} (lines {chunk.start_line}-{chunk.end_line}):\n{compact_snippet(chunk.text)}"
+        for chunk in chunks
+    )
+
+    llm_prompt = f"""Sei un assistente che risponde a domande su un progetto software, basandoti SOLO sul contesto fornito qui sotto. Se il contesto non contiene la risposta, dillo chiaramente invece di inventare.
+
+Contesto dal progetto:
+{context_text}
+
+Domanda: {question}
+
+Rispondi in italiano, in modo chiaro e diretto."""
+
+    llm_answer = ask_llm(llm_prompt)
+
+    if llm_answer:
+        return llm_answer
+
+    # Fallback: se Ollama non risponde, torniamo al vecchio comportamento estrattivo
     lead = (
-        "Local answer from project context:\n"
-        "I found the most relevant repo context. This is extractive, so it stays close to the files; "
-        "the next jump is connecting an external LLM for deeper synthesis.\n\n"
+        "Ollama non e' raggiungibile: risposta locale senza LLM.\n\n"
     )
     return lead + summary + "Evidence:\n" + "\n\n".join(evidence_lines)
