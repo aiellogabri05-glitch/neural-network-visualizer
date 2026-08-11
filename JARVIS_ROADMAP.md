@@ -9,6 +9,7 @@ This project currently visualizes a trained digit-classifier network. To evolve 
 - Exported `weights.json` used by JavaScript inference.
 - First local text-agent shell in `agent/`.
 - Basic local tools: project summary, file reading, text search, Git status, diff, health checks, weight validation, and guarded training.
+- Local question answering over project files with `ask <question>`.
 - Persistent local memory and todos in `.agent_memory.json`.
 - Guarded Git tools for commit and push.
 - No voice interface yet.

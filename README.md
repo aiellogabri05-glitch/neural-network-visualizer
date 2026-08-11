@@ -1,7 +1,7 @@
 # Neural Network Visualizer
 
 A compact neural network visualizer for handwritten digit recognition. The current model is a `64 -> 64 -> 64 -> 10` multilayer perceptron trained on 8x8 digit images, with the forward pass rendered live in the browser as an interactive 3D scene.
-
+![LIVE DEMO](https://aiellogabri05-glitch.github.io/neural-network-visualizer/)
 ![Neural Network Visualizer demo](demo.gif)
 
 ## How It Works
@@ -69,6 +69,7 @@ Try commands such as:
 ```text
 help
 health
+ask how does the agent memory work?
 files
 inspect agent/agent_loop.py
 read README.md

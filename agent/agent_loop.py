@@ -1,6 +1,7 @@
 import argparse
 from pathlib import Path
 
+from agent.brain import answer_project_question
 from agent.messages import SessionMemory
 from agent.permissions import PermissionError as AgentPermissionError
 from agent.planner import HELP_TEXT, plan
@@ -74,6 +75,10 @@ class LocalAgent:
             return health_check(self.workspace_root)
         if action.name == "run_tests":
             return run_tests(self.workspace_root)
+        if action.name == "ask_project":
+            if not action.argument:
+                return "Usage: ask <question>"
+            return answer_project_question(self.workspace_root, action.argument)
         if action.name == "summarize_project":
             return summarize_project(self.workspace_root)
         if action.name == "inspect_path":
@@ -116,9 +121,6 @@ class LocalAgent:
             return ROADMAP
         if action.name == "memory":
             return self.memory.summary()
-        if action.name == "fallback":
-            return "I do not know that command yet. Type 'help' to see what I can do."
-
         return f"Unknown action: {action.name}"
 
     def interactive(self):

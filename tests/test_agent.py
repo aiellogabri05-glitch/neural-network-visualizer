@@ -2,6 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from agent.brain import answer_project_question, rank_chunks
 from agent.permissions import PermissionError, resolve_inside_workspace
 from agent.planner import plan
 from agent.storage import PersistentStore
@@ -51,6 +52,28 @@ class FilesystemToolTests(unittest.TestCase):
 
             self.assertIn("note.txt:1", search_text(temp_dir, "agent"))
             self.assertIn("Lines: 1", inspect_path(temp_dir, "note.txt"))
+
+
+class BrainTests(unittest.TestCase):
+    def test_ranks_relevant_project_chunks(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "README.md"
+            path.write_text("The agent has persistent memory and todos.\n", encoding="utf-8")
+
+            chunks = rank_chunks(temp_dir, "how does memory work")
+
+            self.assertEqual(chunks[0].path, "README.md")
+
+    def test_answers_with_evidence(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "agent.py"
+            path.write_text("The planner routes ask commands.\n", encoding="utf-8")
+
+            answer = answer_project_question(temp_dir, "planner ask commands")
+
+            self.assertIn("Evidence", answer)
+            self.assertIn("Relevant points", answer)
+            self.assertIn("agent.py", answer)
 
 
 if __name__ == "__main__":

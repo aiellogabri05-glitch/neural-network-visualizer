@@ -14,6 +14,7 @@ HELP_TEXT = """Available commands:
 - diff
 - health
 - test
+- ask <question>
 - files
 - inspect <path>
 - read <path>
@@ -50,6 +51,10 @@ def plan(user_text):
         return PlannedAction("health_check")
     if lower in {"test", "tests"}:
         return PlannedAction("run_tests")
+    if lower.startswith("ask "):
+        return PlannedAction("ask_project", text[4:].strip())
+    if lower.startswith("domanda "):
+        return PlannedAction("ask_project", text[8:].strip())
     if lower in {"files", "file", "summary", "riassunto"}:
         return PlannedAction("summarize_project")
     if lower.startswith("inspect "):
@@ -97,4 +102,4 @@ def plan(user_text):
     if lower in {"memory", "memoria"}:
         return PlannedAction("memory")
 
-    return PlannedAction("fallback", text)
+    return PlannedAction("ask_project", text)

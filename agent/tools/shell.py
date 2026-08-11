@@ -86,6 +86,7 @@ def compile_agent(workspace_root):
     files = [
         "agent/__init__.py",
         "agent/agent_loop.py",
+        "agent/brain.py",
         "agent/messages.py",
         "agent/permissions.py",
         "agent/planner.py",
