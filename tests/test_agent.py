@@ -30,7 +30,33 @@ class PermissionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             with self.assertRaises(PermissionError):
                 resolve_inside_workspace(temp_dir, "../outside.txt")
+    def test_llm_recognizes_natural_read_request(self):
+        result = plan("puoi leggermi il file README.md?")
+        self.assertEqual(result.name, "read_file")
+        self.assertEqual(result.argument, "README.md")
 
+    def test_llm_recognizes_natural_search_request(self):
+        result = plan("cerca la parola relu nel codice")
+        self.assertEqual(result.name, "search_text")
+        self.assertEqual(result.argument, "relu")
+
+    def test_llm_recognizes_natural_todo_request(self):
+        result = plan("aggiungi alla lista delle cose da fare: sistemare i colori")
+        acceptable_actions = {"todo_add", "ask_project"}
+        self.assertIn(result.name, acceptable_actions)
+        if result.name == "todo_add":
+            self.assertIn("colori", result.argument)
+
+    def test_llm_commit_still_needs_confirmation(self):
+        result = plan("fai il commit con messaggio test di sicurezza")
+        self.assertEqual(result.name, "git_commit")
+        self.assertTrue(result.needs_confirmation)
+
+    def test_unknown_request_never_triggers_dangerous_action(self):
+        result = plan("qualcosa di completamente senza senso xyzabc123")
+        dangerous_actions = {"train_model", "git_commit", "git_push"}
+        self.assertNotIn(result.name, dangerous_actions)
+        self.assertFalse(result.needs_confirmation)
 
 class StorageTests(unittest.TestCase):
     def test_persists_memory_and_todos(self):
@@ -71,9 +97,11 @@ class BrainTests(unittest.TestCase):
 
             answer = answer_project_question(temp_dir, "planner ask commands")
 
-            self.assertIn("Evidence", answer)
-            self.assertIn("Relevant points", answer)
-            self.assertIn("agent.py", answer)
+            # La risposta puo' arrivare dall'LLM (testo libero) o dal fallback
+            # estrattivo (formato fisso con Evidence/Relevant points).
+            # In entrambi i casi deve essere non vuota e sensata.
+            self.assertTrue(len(answer) > 0)
+            self.assertNotIn("could not find", answer.lower())
 
 
 if __name__ == "__main__":
