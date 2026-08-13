@@ -10,6 +10,7 @@ This project currently visualizes a trained digit-classifier network. To evolve 
 - First local text-agent shell in `agent/`.
 - Basic local tools: project summary, file reading, text search, Git status, diff, health checks, weight validation, and guarded training.
 - Local LLM-backed question answering over project files with `ask <question>`, using a local Ollama model (Llama 3.2 3B) for RAG-based synthesis, with a keyword-extraction fallback if Ollama is unreachable.
+- `ask` now also uses short-term conversation memory: the last few exchanges in the current session are included in the LLM prompt, so follow-up questions ("and how many neurons does each have?") resolve correctly without repeating context.
 - Hybrid planner: fixed keyword commands run instantly with no LLM call; anything else is interpreted by the local LLM and mapped to a known action.
 - LLM-picked actions are validated against a whitelist and required-argument checks before execution, with confirmation gates preserved for risky actions (train, commit, push) even when routed through the LLM.
 - Automated test suite (`tests/test_agent.py`, unittest) covering fixed commands, LLM-routed commands, and a safety invariant: unknown/nonsensical input never triggers a state-changing action.
@@ -83,7 +84,11 @@ Use two memory layers:
 - Long-term memory: user preferences, project facts, recurring decisions, and useful summaries.
 A simple first version can use SQLite plus JSON. Later, add vector search for semantic recall.
  
-Status: long-term memory now uses vector search for semantic recall. Each memory is embedded locally via Ollama (`nomic-embed-text`, 768-dimension vectors) at write time; `recall` embeds the query at search time and ranks stored memories by cosine similarity, keeping only matches above a similarity threshold. Verified to correctly retrieve a memory phrased with different words than the query, and to correctly return no match for unrelated queries. The memory store also writes atomically (temp file + replace) to avoid corruption on interruption. Short-term memory (`SessionMemory` in `messages.py`) not yet reviewed or upgraded.
+Status: both memory layers are now functional and connected to the agent's reasoning, not just recorded.
+ 
+Long-term memory uses vector search for semantic recall. Each memory is embedded locally via Ollama (`nomic-embed-text`, 768-dimension vectors) at write time; `recall` embeds the query at search time and ranks stored memories by cosine similarity, keeping only matches above a similarity threshold. Verified to correctly retrieve a memory phrased with different words than the query, and to correctly return no match for unrelated queries. The memory store also writes atomically (temp file + replace) to avoid corruption on interruption.
+ 
+Short-term memory (`SessionMemory` in `messages.py`) was previously recorded but never actually used by any response. It is now wired into `ask`: the last 6 messages of the current session are formatted and included in the LLM prompt, so follow-up questions that refer back to earlier context ("and how many neurons does each have?") are resolved correctly without the user repeating themselves. Verified manually in an interactive session. Known limitation observed: the model can occasionally misattribute which file supports a claim when synthesizing across multiple context sources; this is a model-reliability limitation, not a memory-wiring bug.
  
 ## Phase 5: Add Voice
  
@@ -117,4 +122,4 @@ Build a local text agent that can:
 - Keep a short task memory during the session.
 Once that works, voice and richer automation become much easier.
  
-Status: initial version added in `agent/`. LLM synthesis layer added on top of the extractive retrieval, connected to a local Ollama model. Planner hardened with validation and automated tests before any write-capable tool is introduced. Long-term memory upgraded from keyword matching to semantic (embedding-based) recall, with atomic file writes.
+Status: initial version added in `agent/`. LLM synthesis layer added on top of the extractive retrieval, connected to a local Ollama model. Planner hardened with validation and automated tests before any write-capable tool is introduced. Both long-term (semantic, embedding-based) and short-term (conversational) memory are implemented and actively used by the agent's responses.

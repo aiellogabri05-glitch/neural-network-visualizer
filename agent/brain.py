@@ -179,8 +179,16 @@ def relevant_points(chunks, question, limit=6):
 
     return points
 
+def format_recent_history(session_memory, max_messages=6):
+    if session_memory is None or not session_memory.messages:
+        return ""
 
-def answer_project_question(workspace_root, question):
+    recent = session_memory.messages[-max_messages:]
+    lines = [f"{message.role}: {message.content}" for message in recent]
+    return "Conversazione recente:\n" + "\n".join(lines) + "\n\n"
+
+
+def answer_project_question(workspace_root, question, session_memory=None):
     chunks = rank_chunks(workspace_root, question)
     if not chunks:
         return (
@@ -206,14 +214,16 @@ def answer_project_question(workspace_root, question):
         for chunk in chunks
     )
 
+    history_text = format_recent_history(session_memory)
+
     llm_prompt = f"""Sei un assistente che risponde a domande su un progetto software, basandoti SOLO sul contesto fornito qui sotto. Se il contesto non contiene la risposta, dillo chiaramente invece di inventare.
 
-Contesto dal progetto:
+{history_text}Contesto dal progetto:
 {context_text}
 
 Domanda: {question}
 
-Rispondi in italiano, in modo chiaro e diretto."""
+Rispondi in italiano, in modo chiaro e diretto. Se la domanda fa riferimento a qualcosa detto prima nella conversazione, usa quel contesto."""
 
     llm_answer = ask_llm(llm_prompt)
 

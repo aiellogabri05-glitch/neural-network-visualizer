@@ -78,7 +78,7 @@ class LocalAgent:
         if action.name == "ask_project":
             if not action.argument:
                 return "Usage: ask <question>"
-            return answer_project_question(self.workspace_root, action.argument)
+            return answer_project_question(self.workspace_root, action.argument, self.memory)
         if action.name == "summarize_project":
             return summarize_project(self.workspace_root)
         if action.name == "inspect_path":
