@@ -2,6 +2,31 @@ import json
 from datetime import datetime
 from pathlib import Path
 
+import requests
+
+
+def get_embedding(text, model="nomic-embed-text"):
+    try:
+        response = requests.post(
+            "http://localhost:11434/api/embeddings",
+            json={"model": model, "prompt": text},
+            timeout=30
+        )
+        response.raise_for_status()
+        return response.json()["embedding"]
+    except Exception:
+        return None  # se Ollama non risponde, niente embedding (gestiamo dopo il caso)
+
+def cosine_similarity(v1, v2):
+        if v1 is None or v2 is None:
+            return -1  # se manca un embedding, consideralo "per niente simile"
+        prodotto = sum(a * b for a, b in zip(v1, v2))
+        lunghezza1 = sum(a * a for a in v1) ** 0.5
+        lunghezza2 = sum(b * b for b in v2) ** 0.5
+        if lunghezza1 == 0 or lunghezza2 == 0:
+            return -1
+        return prodotto / (lunghezza1 * lunghezza2)
+
 
 class PersistentStore:
     def __init__(self, workspace_root, filename=".agent_memory.json"):
@@ -23,30 +48,44 @@ class PersistentStore:
         return data
 
     def _save(self):
-        self.path.write_text(json.dumps(self.data, indent=2), encoding="utf-8")
+        temp_path = self.path.with_suffix(".json.tmp")
+        temp_path.write_text(json.dumps(self.data, indent=2), encoding="utf-8")
+        temp_path.replace(self.path)
 
     def remember(self, text):
         entry = {
             "text": text,
             "created_at": datetime.now().isoformat(timespec="seconds"),
+            "embedding": get_embedding(text),
         }
         self.data["memories"].append(entry)
         self._save()
         return f"Remembered: {text}"
 
+
     def recall(self, query=""):
         memories = self.data["memories"]
-        if query:
-            query_lower = query.lower()
-            memories = [memory for memory in memories if query_lower in memory["text"].lower()]
 
         if not memories:
-            if query:
-                return f"No memories matching: {query}"
             return "No persistent memories yet."
 
+        if query:
+            query_embedding = get_embedding(query)
+            scored = [
+                (cosine_similarity(query_embedding, memory.get("embedding")), memory)
+                for memory in memories
+            ]
+            scored.sort(key=lambda pair: pair[0], reverse=True)
+            best_matches = [memory for score, memory in scored[:5] if score > 0.5]
+
+            if not best_matches:
+                return f"No memories matching: {query}"
+            memories = best_matches
+        else:
+            memories = memories[-20:]
+
         lines = []
-        for index, memory in enumerate(memories[-20:], start=1):
+        for index, memory in enumerate(memories, start=1):
             lines.append(f"{index}. [{memory['created_at']}] {memory['text']}")
         return "\n".join(lines)
 
