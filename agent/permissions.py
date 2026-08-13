@@ -1,5 +1,11 @@
 from pathlib import Path
 
+from pathlib import Path
+
+ALLOWED_EXTRA_ROOTS = [
+    Path.home() / "Desktop",
+    Path.home() / "Documents",
+]
 
 class PermissionError(Exception):
     pass
@@ -7,10 +13,24 @@ class PermissionError(Exception):
 
 def resolve_inside_workspace(workspace_root, user_path):
     root = Path(workspace_root).resolve()
-    candidate = (root / user_path).resolve()
 
-    if candidate != root and root not in candidate.parents:
-        raise PermissionError(f"Path outside workspace is not allowed: {user_path}")
+    # Se il percorso e' assoluto (es. "C:\Users\aiell\Desktop\file.txt"),
+    # lo usiamo cosi' com'e'. Se e' relativo (es. "file.txt"), lo interpretiamo
+    # rispetto alla cartella del progetto.
+    raw_path = Path(user_path)
+    if raw_path.is_absolute():
+        candidate = raw_path.resolve()
+    else:
+        candidate = (root / user_path).resolve()
+
+    allowed_roots = [root] + ALLOWED_EXTRA_ROOTS
+    is_allowed = any(
+        candidate == allowed_root or allowed_root in candidate.parents
+        for allowed_root in allowed_roots
+    )
+
+    if not is_allowed:
+        raise PermissionError(f"Path outside allowed locations is not allowed: {user_path}")
 
     return candidate
 
