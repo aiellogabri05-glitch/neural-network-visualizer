@@ -1,4 +1,5 @@
 import json
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -18,14 +19,33 @@ def get_embedding(text, model="nomic-embed-text"):
         return None  # se Ollama non risponde, niente embedding (gestiamo dopo il caso)
 
 def cosine_similarity(v1, v2):
-        if v1 is None or v2 is None:
-            return -1  # se manca un embedding, consideralo "per niente simile"
-        prodotto = sum(a * b for a, b in zip(v1, v2))
-        lunghezza1 = sum(a * a for a in v1) ** 0.5
-        lunghezza2 = sum(b * b for b in v2) ** 0.5
-        if lunghezza1 == 0 or lunghezza2 == 0:
-            return -1
-        return prodotto / (lunghezza1 * lunghezza2)
+    if v1 is None or v2 is None:
+        return -1
+    prodotto = sum(a * b for a, b in zip(v1, v2))
+    lunghezza1 = sum(a * a for a in v1) ** 0.5
+    lunghezza2 = sum(b * b for b in v2) ** 0.5
+    if lunghezza1 == 0 or lunghezza2 == 0:
+        return -1
+    return prodotto / (lunghezza1 * lunghezza2)
+
+
+def lexical_memory_matches(memories, query):
+    query_tokens = set(re.findall(r"[a-zA-Z0-9_]+", query.lower()))
+    if not query_tokens:
+        return []
+
+    scored = []
+    for memory in memories:
+        text = memory.get("text", "")
+        memory_tokens = re.findall(r"[a-zA-Z0-9_]+", text.lower())
+        overlap = query_tokens.intersection(memory_tokens)
+        if overlap:
+            score = len(overlap) * 4
+            score += sum(memory_tokens.count(token) for token in overlap)
+            scored.append((score, memory))
+
+    scored.sort(key=lambda pair: pair[0], reverse=True)
+    return [memory for _, memory in scored[:5]]
 
 
 class PersistentStore:
@@ -71,12 +91,17 @@ class PersistentStore:
 
         if query:
             query_embedding = get_embedding(query)
-            scored = [
-                (cosine_similarity(query_embedding, memory.get("embedding")), memory)
-                for memory in memories
-            ]
-            scored.sort(key=lambda pair: pair[0], reverse=True)
-            best_matches = [memory for score, memory in scored[:5] if score > 0.5]
+            if query_embedding is None:
+                best_matches = lexical_memory_matches(memories, query)
+            else:
+                scored = [
+                    (cosine_similarity(query_embedding, memory.get("embedding")), memory)
+                    for memory in memories
+                ]
+                scored.sort(key=lambda pair: pair[0], reverse=True)
+                best_matches = [memory for score, memory in scored[:5] if score > 0.5]
+                if not best_matches:
+                    best_matches = lexical_memory_matches(memories, query)
 
             if not best_matches:
                 return f"No memories matching: {query}"
@@ -125,4 +150,3 @@ class PersistentStore:
                 return f"Completed todo #{todo_id}: {todo['text']}"
 
         return f"Todo not found: {todo_id}"
-

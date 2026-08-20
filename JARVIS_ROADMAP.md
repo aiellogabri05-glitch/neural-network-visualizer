@@ -17,6 +17,8 @@ This project currently visualizes a trained digit-classifier network. To evolve 
 - Persistent local memory and todos in `.agent_memory.json`.
 - Semantic memory recall: each remembered fact is stored with a local embedding (Ollama `nomic-embed-text`), and `recall <query>` ranks memories by cosine similarity instead of exact keyword matching, so a query can find a memory phrased with completely different words.
 - Atomic writes for the memory store: `_save` writes to a temporary file and replaces the real file only after the write succeeds, so an interruption mid-write cannot corrupt `.agent_memory.json`.
+- Guarded file edits: `append`, `replace`, and `edit` show a unified diff first. `apply append`, `apply replace`, and `apply edit` require confirmation before writing.
+- Guarded Excel tools: `.xlsx` files can be inspected with `excel sheets` / `excel read`, and single-cell changes are previewed with `excel set` before `apply excel` writes them.
 - Guarded Git tools for commit and push.
 - No voice interface yet.
 - No file-modification tool yet (read-only by design, on purpose, until planner reliability is proven).
@@ -74,7 +76,9 @@ Then add higher-impact tools behind confirmation gates:
 - Control browser actions.
 - Schedule reminders.
 - Run automations.
-Before building the file-modification tool: the planner's reliability has been hardened (action whitelist, argument validation, confirmation gates preserved through the LLM path, automated regression tests). This was done deliberately before adding any tool that writes to disk, since a misrouted command is far more costly once it can modify real files. Next concrete step: a `modify_file` tool with a restricted workspace path, a shown diff before applying, and mandatory confirmation.
+The first file-modification tools are now in place: `append` and `replace` handle precise edits, while `edit <path>: <instruction>` asks the local LLM to propose a full-file change. Every write path previews a unified diff first, stores a pending edit when needed, and requires confirmation before changing files. Paths are resolved through the same workspace guard as the read tools.
+
+Spreadsheet support has started with a conservative `.xlsx` tool layer: list sheets, read ranges, preview one cell change, and apply the pending change after confirmation. Next spreadsheet steps are row append, simple table detection, formula-aware previews, and richer summaries.
  
 ## Phase 4: Add Memory
  

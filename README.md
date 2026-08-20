@@ -75,10 +75,20 @@ files
 inspect agent/agent_loop.py
 read README.md
 search forwardPass
+excel create budget.xlsx: Budget = Categoria, Importo, Data
+excel sheets budget.xlsx
+excel read budget.xlsx: Budget!A1:D10
+excel append budget.xlsx: Budget = Affitto, 700, 2026-08-20
+excel set budget.xlsx: Budget!B2 = 1200
+apply excel
 remember the visualizer uses a 64 -> 64 -> 64 -> 10 model
 recall visualizer
 todo add add voice input later
 todo list
+edit README.md: add a quick start section
+apply edit
+replace README.md: old text => new text
+apply replace README.md: old text => new text
 validate
 diff
 explain
